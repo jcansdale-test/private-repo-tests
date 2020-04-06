@@ -21,7 +21,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: npm install
       run: |
-        printf "//npm.pkg.github.com/:_authToken=${{ secrets.READ_PACKAGES_TOKEN }}\n@jcansdale-test:registry=https://npm.pkg.github.com" > .npmrc
+        cat > .npmrc << EOM
+        //npm.pkg.github.com/:_authToken=${{ secrets.READ_PACKAGES_TOKEN }}
+        @jcansdale-test:registry=https://npm.pkg.github.com
+        EOM
         npm install @jcansdale-test/private-repo
   nuget:
     runs-on: ubuntu-latest
@@ -30,19 +33,21 @@ jobs:
     - name: dotnet add
       run: |
         dotnet new console -n HelloWorld
-        echo "<?xml version='1.0' encoding='utf-8'?>" >> nuget.config
-        echo "<configuration>" >> nuget.config
-        echo "    <packageSources>" >> nuget.config
-        echo "        <clear />" >> nuget.config
-        echo "        <add key='github' value='https://nuget.pkg.github.com/jcansdale-test/index.json' />" >> nuget.config
-        echo "    </packageSources>" >> nuget.config
-        echo "    <packageSourceCredentials>" >> nuget.config
-        echo "        <github>" >> nuget.config
-        echo "            <add key='Username' value='token' />" >> nuget.config
-        echo "            <add key='ClearTextPassword' value='${{ secrets.READ_PACKAGES_TOKEN }}' />" >> nuget.config
-        echo "        </github>" >> nuget.config
-        echo "    </packageSourceCredentials>" >> nuget.config
-        echo "</configuration>" >> nuget.config
+        cat > nuget.config << EOM
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+            <packageSources>
+                <clear />
+                <add key="github" value="https://nuget.pkg.github.com/jcansdale-test/index.json" />
+            </packageSources>
+            <packageSourceCredentials>
+                <github>
+                    <add key="Username" value="token" />
+                    <add key="ClearTextPassword" value="${{ secrets.READ_PACKAGES_TOKEN }}" />
+                </github>
+            </packageSourceCredentials>
+        </configuration>
+        EOM
         dotnet add HelloWorld/HelloWorld.csproj package private-repo        
   rubygems:
     runs-on: ubuntu-latest
@@ -50,11 +55,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: gem install
       run: |
-        printf -- "---\n" > gemrc.yml
-        printf -- ":backtrace: false\n" gemrc.yml
-        printf -- ":bulk_threshold: 1000\n" >> gemrc.yml
-        printf -- ":sources:\n" >> gemrc.yml
-        printf -- "- https://token:${{ secrets.READ_PACKAGES_TOKEN }}@rubygems.pkg.github.com/jcansdale-test/\n" >> gemrc.yml
-        printf -- ":update_sources: true\n" >> gemrc.yml
-        printf -- ":verbose: true\n" >> gemrc.yml
+        cat > gemrc.yml << EOM
+        :backtrace: false
+        :bulk_threshold: 1000
+        :sources:
+        - https://token:${{ secrets.READ_PACKAGES_TOKEN }}@rubygems.pkg.github.com/jcansdale-test/
+        :update_sources: true
+        :verbose: true
+        EOM
         gem install private-repo --install-dir . --config-file gemrc.yml
