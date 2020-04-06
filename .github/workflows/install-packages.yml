@@ -1,0 +1,60 @@
+name: Install packages tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: docker pull
+      run: |
+        docker login docker.pkg.github.com -u token -p ${{ secrets.READ_PACKAGES_TOKEN }}
+        docker pull docker.pkg.github.com/jcansdale-test/private-repo/alpine:latest
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: npm install
+      run: |
+        printf "//npm.pkg.github.com/:_authToken=${{ secrets.READ_PACKAGES_TOKEN }}\n@jcansdale-test:registry=https://npm.pkg.github.com" > .npmrc
+        npm install @jcansdale-test/private-repo
+  nuget:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: dotnet add
+      run: |
+        dotnet new console -n HelloWorld
+        echo "<?xml version='1.0' encoding='utf-8'?>" >> nuget.config
+        echo "<configuration>" >> nuget.config
+        echo "    <packageSources>" >> nuget.config
+        echo "        <clear />" >> nuget.config
+        echo "        <add key='github' value='https://nuget.pkg.github.com/jcansdale-test/index.json' />" >> nuget.config
+        echo "    </packageSources>" >> nuget.config
+        echo "    <packageSourceCredentials>" >> nuget.config
+        echo "        <github>" >> nuget.config
+        echo "            <add key='Username' value='token' />" >> nuget.config
+        echo "            <add key='ClearTextPassword' value='${{ secrets.READ_PACKAGES_TOKEN }}' />" >> nuget.config
+        echo "        </github>" >> nuget.config
+        echo "    </packageSourceCredentials>" >> nuget.config
+        echo "</configuration>" >> nuget.config
+        dotnet add HelloWorld/HelloWorld.csproj package private-repo        
+  rubygems:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: gem install
+      run: |
+        printf -- "---\n" > gemrc.yml
+        printf -- ":backtrace: false\n" gemrc.yml
+        printf -- ":bulk_threshold: 1000\n" >> gemrc.yml
+        printf -- ":sources:\n" >> gemrc.yml
+        printf -- "- https://token:${{ secrets.READ_PACKAGES_TOKEN }}@rubygems.pkg.github.com/jcansdale-test/\n" >> gemrc.yml
+        printf -- ":update_sources: true\n" >> gemrc.yml
+        printf -- ":verbose: true\n" >> gemrc.yml
+        gem install private-repo --install-dir . --config-file gemrc.yml
