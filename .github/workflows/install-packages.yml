@@ -64,3 +64,34 @@ jobs:
         :verbose: true
         EOM
         gem install private-repo --install-dir . --config-file gemrc.yml
+  maven:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: mvn compile
+      run: |
+        cat > pom.xml << EOM
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.consumecompany.app</groupId>
+          <artifactId>consume-app</artifactId>
+          <version>1.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>private-repo</groupId>
+              <artifactId>my-app</artifactId>
+              <version>1.0</version>
+            </dependency>    
+          </dependencies>
+          <repositories>
+            <repository>
+              <id>github</id>
+              <name>GitHub OWNER Apache Maven Packages</name>
+              <url>https://token:${{ secrets.READ_PACKAGES_TOKEN }}@maven.pkg.github.com/jcansdale-test/maven-test</url>
+            </repository>
+          </repositories>
+        </project>
+        EOM
+        mvn compile
