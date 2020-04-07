@@ -1,4 +1,4 @@
-name: Install packages tests
+name: Install tests
 
 on:
   push:
@@ -10,7 +10,6 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - name: docker pull
       run: |
         docker login docker.pkg.github.com -u token -p ${{ secrets.READ_PACKAGES_TOKEN }}
@@ -18,7 +17,6 @@ jobs:
   npm:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - name: npm install
       run: |
         cat > .npmrc << EOM
@@ -29,7 +27,6 @@ jobs:
   nuget:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - name: dotnet add
       run: |
         dotnet new console -n HelloWorld
@@ -52,7 +49,6 @@ jobs:
   rubygems:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - name: gem install
       run: |
         cat > gemrc.yml << EOM
@@ -67,7 +63,6 @@ jobs:
   maven:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - name: mvn compile
       run: |
         cat > pom.xml << EOM
