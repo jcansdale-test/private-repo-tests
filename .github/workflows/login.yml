@@ -1,0 +1,22 @@
+name: Login tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: docker login
+      run: echo ${{ secrets.READ_PACKAGES_TOKEN }} | docker login docker.pkg.github.com -u token -p --password-stdin
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+    - name: npm login
+      run: |
+        sudo npm install -g npm-cli-login
+        npm-cli-login -u token -p ${{ secrets.READ_PACKAGES_TOKEN }} -e any@email.com \
+          -r https://npm.pkg.github.com -s @jcansdale-test --config-path .npmrc
