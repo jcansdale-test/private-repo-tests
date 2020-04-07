@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: docker login
-      run: echo ${{ secrets.READ_PACKAGES_TOKEN }} | docker login docker.pkg.github.com -u token -p --password-stdin
+      run: echo ${{ secrets.READ_PACKAGES_TOKEN }} | docker login docker.pkg.github.com -u token --password-stdin
   npm:
     runs-on: ubuntu-latest
     steps:
