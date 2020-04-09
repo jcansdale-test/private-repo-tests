@@ -89,4 +89,4 @@ jobs:
           </repositories>
         </project>
         EOM
-        mvn compile
+        mvn install
